@@ -24,7 +24,6 @@ object Mnemonics {
     const val DEFAULT_LANGUAGE_CODE = "en"
 
     internal val secureRandom = SecureRandom()
-    @Suppress("VARIABLE_IN_SINGLETON_WITHOUT_THREAD_LOCAL")
     internal var cachedList = WordList()
 
     fun getCachedWords(languageCode: String): List<String> {
@@ -33,7 +32,6 @@ object Mnemonics {
         }
         return cachedList.words
     }
-
 
     //
     // Inner Classes
@@ -140,9 +138,11 @@ object Mnemonics {
          * Get the original entropy that was used to create this MnemonicCode. This call will fail
          * if the words have an invalid length or checksum.
          *
+         * @InvalidWordException If any word isn't in the word list
          * @throws WordCountException when the word count is zero or not a multiple of 3.
          * @throws ChecksumException if the checksum does not match the expected value.
          */
+        @Suppress("ThrowsCount", "NestedBlockDepth")
         fun toEntropy(): ByteArray {
             wordCount.let { if (it <= 0 || it % 3 > 0) throw WordCountException(wordCount) }
 
@@ -283,7 +283,6 @@ object Mnemonics {
         }
     }
 
-
     //
     // Typed Exceptions
     //
@@ -333,21 +332,19 @@ fun MnemonicCode.toSeed(
     // we can skip validation when we know for sure that the code is valid
     // such as when it was just generated from new/correct entropy (common case for new seeds)
     if (validate) validate()
-    return (DEFAULT_PASSPHRASE.toCharArray() + passphrase)
-        .map { it.code.toByte() }.toByteArray()
-        .let { salt ->
-            PBEKeySpecCommon(chars, salt, INTERATION_COUNT, KEY_SIZE).let { pbeKeySpec ->
-                runCatching {
-                    SecretKeyFactoryCommon.getInstance(PBE_ALGORITHM)
-                }.getOrElse {
-                    SecretKeyFactoryCommon.getInstance(PBE_ALGORITHM, FallbackProvider())
-                }.let { keyFactory ->
-                    keyFactory.generateSecret(pbeKeySpec).encoded.also {
-                        pbeKeySpec.clearPassword()
-                    }
+    return (DEFAULT_PASSPHRASE.toCharArray() + passphrase).toBytes().let { salt ->
+        PBEKeySpecCommon(chars, salt, INTERATION_COUNT, KEY_SIZE).let { pbeKeySpec ->
+            runCatching {
+                SecretKeyFactoryCommon.getInstance(PBE_ALGORITHM)
+            }.getOrElse {
+                SecretKeyFactoryCommon.getInstance(PBE_ALGORITHM, FallbackProvider())
+            }.let { keyFactory ->
+                keyFactory.generateSecret(pbeKeySpec).encoded.also {
+                    pbeKeySpec.clearPassword()
                 }
             }
         }
+    }
 }
 
 fun WordCount.toEntropy(): ByteArray = ByteArray(bitLength / 8).apply {
@@ -358,9 +355,12 @@ fun WordCount.toEntropy(): ByteArray = ByteArray(bitLength / 8).apply {
 // Private Extensions
 //
 
-internal expect fun ByteArray.toSha256() : ByteArray
+internal expect fun ByteArray.toSha256(): ByteArray
 
 private fun ByteArray.toBits(): List<Boolean> = flatMap { it.toBits() }
 
 private fun Byte.toBits(): List<Boolean> = (7 downTo 0).map { (toInt() and (1 shl it)) != 0 }
 
+private fun CharArray.toBytes(): ByteArray {
+    return map { it.code.toByte() }.toByteArray()
+}

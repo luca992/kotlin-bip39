@@ -15,7 +15,7 @@ package cash.z.ecc.android.crypto
  * Modified to use SHA-512 - Ken Sedgwick ken@bonsai.com
  * Modified to for Kotlin - Kevin Gorham anothergmale@gmail.com
  */
-expect object Pbkdf2Sha512 {
+internal expect object Pbkdf2Sha512 {
 
     /**
      * Generate a derived key from the given parameters.
@@ -26,7 +26,4 @@ expect object Pbkdf2Sha512 {
      * @param dkLen the key length in bits
      */
     fun derive(p: CharArray, s: ByteArray, c: Int, dkLen: Int): ByteArray
-
-    internal fun F(p: ByteArray, s: ByteArray, c: Int, i: Int): ByteArray
-
 }

@@ -1,16 +1,15 @@
 package cash.z.ecc.android.crypto
 
 import javax.crypto.spec.PBEKeySpec
-import javax.crypto.SecretKeyFactory
 
-actual class PBEKeySpecCommon actual constructor(password: CharArray?, salt: ByteArray?, iterationCount: Int, keyLength: Int) {
+internal actual class PBEKeySpecCommon actual constructor(password: CharArray?, salt: ByteArray?, iterationCount: Int, keyLength: Int) {
     val wrappedPbeKeySpec = PBEKeySpec(password, salt, iterationCount, keyLength)
 
     actual var password: CharArray? = null
         get() = wrappedPbeKeySpec.password
         private set
     actual var salt: ByteArray? = wrappedPbeKeySpec.salt
-        get() =  wrappedPbeKeySpec.salt
+        get() = wrappedPbeKeySpec.salt
         private set
     actual var iterationCount: Int = wrappedPbeKeySpec.iterationCount
         get() = wrappedPbeKeySpec.iterationCount
@@ -22,6 +21,4 @@ actual class PBEKeySpecCommon actual constructor(password: CharArray?, salt: Byt
     actual fun clearPassword() {
         wrappedPbeKeySpec.clearPassword()
     }
-
-
 }
