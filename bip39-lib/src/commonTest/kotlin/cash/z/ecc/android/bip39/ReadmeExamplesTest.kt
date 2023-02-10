@@ -6,9 +6,8 @@ import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import kotlin.jvm.JvmName
 
-class ReadmeExamplesTestJvm : ShouldSpec({
+class ReadmeExamplesTest : ShouldSpec({
     val validPhrase =
         "still champion voice habit trend flight survey between bitter process artefact blind carbon truly provide dizzy crush flush breeze blouse charge solid fish spread"
     context("Example: Create 24-word mnemonic phrase") {

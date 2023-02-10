@@ -1,3 +1,3 @@
 package cash.z.ecc.android.common
 
-actual typealias Closeable = okio.Closeable
+internal actual interface Closeable : okio.Closeable

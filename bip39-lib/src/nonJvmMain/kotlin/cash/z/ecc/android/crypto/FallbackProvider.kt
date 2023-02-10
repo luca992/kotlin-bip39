@@ -1,3 +1,3 @@
 package cash.z.ecc.android.crypto
 
-actual class FallbackProvider
+internal actual class FallbackProvider

@@ -22,7 +22,7 @@ import kotlin.math.ceil
  * Modified to use SHA-512 - Ken Sedgwick ken@bonsai.com
  * Modified to for Kotlin - Kevin Gorham anothergmale@gmail.com
  */
-actual object Pbkdf2Sha512 {
+internal actual object Pbkdf2Sha512 {
 
     /**
      * Generate a derived key from the given parameters.
@@ -52,7 +52,7 @@ actual object Pbkdf2Sha512 {
         }
     }
 
-    internal actual fun F(
+    private fun F(
         p: ByteArray,
         s: ByteArray,
         c: Int,
