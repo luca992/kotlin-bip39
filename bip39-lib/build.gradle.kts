@@ -71,6 +71,10 @@ kotlin {
             browser()
             nodejs()
         }
+        @OptIn(ExperimentalWasmDsl::class)
+        wasmWasi{
+            nodejs()
+        }
     }
 
     sourceSets {
@@ -100,6 +104,9 @@ kotlin {
 
             if (enableWasm) {
                 val wasmJsMain by getting {
+                    dependsOn(nonJvmMain)
+                }
+                val wasmWasiMain by getting {
                     dependsOn(nonJvmMain)
                 }
             }
