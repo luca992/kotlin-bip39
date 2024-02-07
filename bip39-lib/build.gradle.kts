@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import java.util.*
 
 plugins {
@@ -17,6 +19,7 @@ plugins {
 
 val enableNative = project.property("NATIVE_TARGETS_ENABLED").toString().toBoolean()
 val enableJs = project.property("JS_TARGET_ENABLED").toString().toBoolean()
+val enableWasm = project.property("WASM_TARGET_ENABLED").toString().toBoolean()
 val nativeTargets =
     if (enableNative) {
         arrayOf(
@@ -38,7 +41,7 @@ kotlin {
         }
     }
     if (enableJs) {
-        js(IR) {
+        js {
             browser {
                 testTask {
                     useMocha {
@@ -62,6 +65,13 @@ kotlin {
             targets.add(presets.getByName(target).createTarget(target))
         }
     }
+    if (enableWasm) {
+        @OptIn(ExperimentalWasmDsl::class)
+        wasmJs{
+            browser()
+            nodejs()
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
@@ -74,7 +84,7 @@ kotlin {
             }
         }
 
-        if (enableNative || enableJs) {
+        if (enableNative || enableJs || enableWasm) {
             val nonJvmMain by creating {
                 dependsOn(commonMain)
                 dependencies {
@@ -84,6 +94,12 @@ kotlin {
 
             if (enableJs) {
                 jsMain {
+                    dependsOn(nonJvmMain)
+                }
+            }
+
+            if (enableWasm) {
+                val wasmJsMain by getting {
                     dependsOn(nonJvmMain)
                 }
             }
@@ -234,4 +250,27 @@ signing {
 val signingTasks = tasks.withType<Sign>()
 tasks.withType<AbstractPublishToMaven>().configureEach {
     dependsOn(signingTasks)
+}
+
+//
+// The following is required to support the wasmJs target.
+//
+// Node.js Canary is set to 21.0.0-v8-canary20231019bd785be450
+// as that is the last version to ship Windows binaries too.
+//
+
+rootProject.extensions.configure<NodeJsRootExtension> {
+    nodeVersion = "22.0.0-v8-canary202401102ecfc94f85"
+    nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+}
+
+
+tasks.withType<org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask>().configureEach {
+    args.add("--ignore-engines")
+}
+
+tasks.withType<Test> {
+    this.testLogging {
+        this.showStandardStreams = true
+    }
 }
